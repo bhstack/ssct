@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sport Stacking Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+    }
+    label {
+      font-weight: bold;
+    }
+    input[type="number"] {
+      width: 80px;
+      padding: 5px;
+      margin: 5px;
+    }
+    select, button {
+      margin: 10px 5px;
+      padding: 8px 12px;
+    }
+    .section {
+      margin-top: 30px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+    .result {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sport Stacking Calculator</h1>
+  <p style="text-align: center;">(Put 999 if scratch — only valid for Tournament mode)</p>
+
+  <label for="mode">Mode:</label>
+  <select id="mode" onchange="toggleMode()">
+    <option value="tournament">Tournament (3 times)</option>
+    <option value="single">Single Time</option>
+    <option value="average363">3-6-3 Average</option>
+  </select>
+
+  <!-- Tournament Mode -->
+  <div class="section" id="tournamentSection">
+    <h2>Tournament Mode</h2>
+    <div>
+      <label>3-3-3:</label>
+      <input type="number" id="t_333_1" step="0.001">
+      <input type="number" id="t_333_2" step="0.001">
+      <input type="number" id="t_333_3" step="0.001">
+    </div>
+    <div>
+      <label>3-6-3:</label>
+      <input type="number" id="t_363_1" step="0.001">
+      <input type="number" id="t_363_2" step="0.001">
+      <input type="number" id="t_363_3" step="0.001">
+    </div>
+    <div>
+      <label>Cycle:</label>
+      <input type="number" id="t_cycle_1" step="0.001">
+      <input type="number" id="t_cycle_2" step="0.001">
+      <input type="number" id="t_cycle_3" step="0.001">
+    </div>
+    <button onclick="calculateTournament()">Calculate</button>
+    <button onclick="resetTournament()">Reset</button>
+    <div class="result" id="tournamentResults"></div>
+  </div>
+
+  <!-- Single Time Mode -->
+  <div class="section hidden" id="singleSection">
+    <h2>Single Time Mode</h2>
+    <div>
+      <label>3-3-3:</label>
+      <input type="number" id="s_333" step="0.001">
+    </div>
+    <div>
+      <label>3-6-3:</label>
+      <input type="number" id="s_363" step="0.001">
+    </div>
+    <div>
+      <label>Cycle:</label>
+      <input type="number" id="s_cycle" step="0.001">
+    </div>
+    <button onclick="calculateSingle()">Calculate</button>
+    <button onclick="resetSingle()">Reset</button>
+    <div class="result" id="singleResults"></div>
+  </div>
+
+  <!-- 3-6-3 Average Mode -->
+  <div class="section hidden" id="average363Section">
+    <h2>3-6-3 Average Calculator</h2>
+    <label>Average of <input id="numTimes" type="number" min="1" style="width: 60px;"> times</label>
+    <button onclick="generate363Inputs()">Go</button>
+    <div id="inputFields"></div>
+    <button onclick="calculateAverage363()">Calculate Average</button>
+    <button onclick="resetAverage363()">Reset</button>
+    <div class="result" id="averageResult"></div>
+  </div>
+
+  <script>
+    function toggleMode() {
+      const mode = document.getElementById('mode').value;
+      document.getElementById('tournamentSection').classList.add('hidden');
+      document.getElementById('singleSection').classList.add('hidden');
+      document.getElementById('average363Section').classList.add('hidden');
+
+      if (mode === 'tournament') {
+        document.getElementById('tournamentSection').classList.remove('hidden');
+      } else if (mode === 'single') {
+        document.getElementById('singleSection').classList.remove('hidden');
+      } else {
+        document.getElementById('average363Section').classList.remove('hidden');
+      }
+    }
+
+    function bestValidTime(inputs) {
+      const valid = inputs.map(Number).filter(n => n !== 999);
+      return valid.length > 0 ? Math.min(...valid) : null;
+    }
+
+    function calculateTournament() {
+      const best333 = bestValidTime([
+        document.getElementById('t_333_1').value,
+        document.getElementById('t_333_2').value,
+        document.getElementById('t_333_3').value
+      ]);
+
+      const best363 = bestValidTime([
+        document.getElementById('t_363_1').value,
+        document.getElementById('t_363_2').value,
+        document.getElementById('t_363_3').value
+      ]);
+
+      const bestCycle = bestValidTime([
+        document.getElementById('t_cycle_1').value,
+        document.getElementById('t_cycle_2').value,
+        document.getElementById('t_cycle_3').value
+      ]);
+
+      let result = '';
+      if (best333 === null || best363 === null || bestCycle === null) {
+        result = 'All-Around: SCRATCH';
+      } else {
+        const total = (best333 + best363 + bestCycle).toFixed(3);
+        result = `Best 3-3-3: ${best333.toFixed(3)}<br>
+                  Best 3-6-3: ${best363.toFixed(3)}<br>
+                  Best Cycle: ${bestCycle.toFixed(3)}<br>
+                  All-Around: ${total} seconds`;
+      }
+
+      document.getElementById('tournamentResults').innerHTML = result;
+    }
+
+    function calculateSingle() {
+      const t333 = parseFloat(document.getElementById('s_333').value);
+      const t363 = parseFloat(document.getElementById('s_363').value);
+      const cycle = parseFloat(document.getElementById('s_cycle').value);
+
+      let result = '';
+      if (isNaN(t333) || isNaN(t363) || isNaN(cycle)) {
+        result = 'All-Around: SCRATCH';
+      } else {
+        const total = (t333 + t363 + cycle).toFixed(3);
+        result = `3-3-3: ${t333.toFixed(3)}<br>
+                  3-6-3: ${t363.toFixed(3)}<br>
+                  Cycle: ${cycle.toFixed(3)}<br>
+                  All-Around: ${total} seconds`;
+      }
+
+      document.getElementById('singleResults').innerHTML = result;
+    }
+
+    function resetTournament() {
+      ['t_333_1','t_333_2','t_333_3','t_363_1','t_363_2','t_363_3','t_cycle_1','t_cycle_2','t_cycle_3']
+        .forEach(id => document.getElementById(id).value = '');
+      document.getElementById('tournamentResults').innerHTML = '';
+    }
+
+    function resetSingle() {
+      ['s_333','s_363','s_cycle'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('singleResults').innerHTML = '';
+    }
+
+    function generate363Inputs() {
+      const num = parseInt(document.getElementById('numTimes').value);
+      const container = document.getElementById('inputFields');
+      container.innerHTML = '';
+      if (isNaN(num) || num <= 0) return;
+
+      for (let i = 0; i < num; i++) {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.step = '0.001';
+        input.placeholder = `Time ${i + 1}`;
+        input.className = 'avgInput';
+        container.appendChild(input);
+      }
+    }
+
+    function calculateAverage363() {
+      const inputs = document.querySelectorAll('.avgInput');
+      const values = Array.from(inputs).map(i => parseFloat(i.value)).filter(n => !isNaN(n));
+      if (values.length === 0) {
+        document.getElementById('averageResult').innerText = 'No valid times entered.';
+        return;
+      }
+      const avg = (values.reduce((a, b) => a + b) / values.length).toFixed(2);
+      document.getElementById('averageResult').innerText = `Average 3-6-3: ${avg} seconds`;
+    }
+
+    function resetAverage363() {
+      document.getElementById('numTimes').value = '';
+      document.getElementById('inputFields').innerHTML = '';
+      document.getElementById('averageResult').innerText = '';
+    }
+  </script>
+</body>
+</html>
