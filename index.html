@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Sport Stacking Calculators</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Mobile scaling -->
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      margin: 20px;
+      margin: 10px;
     }
     h1 {
       margin-bottom: 10px;
@@ -23,14 +24,16 @@
       margin: 10px 0;
     }
     input[type="number"] {
-      width: 80px;
-      padding: 5px;
+      width: 100px;
+      padding: 10px;
       margin: 5px;
       text-align: center;
+      font-size: 18px;
     }
     button {
       margin: 10px;
-      padding: 6px 12px;
+      padding: 10px 20px;
+      font-size: 18px;
       cursor: pointer;
     }
     #average363Inputs {
@@ -39,13 +42,24 @@
       justify-content: center;
     }
     .stack-input {
-      margin: 4px;
+      margin: 6px;
+      font-size: 18px;
+      padding: 10px;
     }
 
     /* Mobile tweaks */
     @media (max-width: 600px) {
+      body {
+        font-size: 18px;
+      }
       input[type="number"] {
-        width: 70px;
+        width: 90px;
+        font-size: 18px;
+        padding: 10px;
+      }
+      button {
+        font-size: 18px;
+        padding: 12px 24px;
       }
     }
   </style>
@@ -55,7 +69,6 @@
   <p>Select a mode below:</p>
 
   <select id="modeSelect" onchange="showMode()">
-    <option value="">-- Choose a mode --</option>
     <option value="tournament">Tournament (3 times each stack)</option>
     <option value="single">Single Time (PRs)</option>
     <option value="average363">3-6-3 Average Calculator</option>
@@ -128,6 +141,7 @@
   </div>
 
   <script>
+    // Show mode
     function showMode() {
       let modes = document.querySelectorAll('.mode');
       modes.forEach(m => m.style.display = "none");
@@ -137,7 +151,7 @@
       }
     }
 
-    // --- Confirm Reset ---
+    // Confirm Reset
     function confirmReset(mode) {
       if (confirm("Are you sure you want to reset? All times will be cleared.")) {
         if (mode === "tournament") resetTournament();
@@ -146,7 +160,7 @@
       }
     }
 
-    // --- Reset Functions ---
+    // Reset functions
     function resetTournament() {
       document.getElementById("tournamentForm").reset();
       document.getElementById("tournamentResult").innerHTML = "";
@@ -161,7 +175,7 @@
       document.getElementById("average363Inputs").innerHTML = "";
     }
 
-    // --- Tournament Calculation ---
+    // Tournament Calculation
     function calculateTournament() {
       function bestOfThree(a, b, c) {
         let times = [a, b, c].map(Number);
@@ -200,7 +214,7 @@
       }
     }
 
-    // --- Single Mode Calculation ---
+    // Single Mode Calculation
     function calculateSingle() {
       let s333 = parseFloat(document.getElementById("s333").value);
       let s363 = parseFloat(document.getElementById("s363").value);
@@ -218,7 +232,7 @@
          <p>Cycle: ${scycle.toFixed(3)}</p>`;
     }
 
-    // --- 3-6-3 Average ---
+    // 3-6-3 Average
     function generate363Inputs() {
       let num = document.getElementById("numTimes").value;
       let inputsDiv = document.getElementById("average363Inputs");
@@ -248,6 +262,10 @@
       let avg = (times.reduce((a, b) => a + b, 0) / times.length).toFixed(2);
       document.getElementById("average363Result").innerHTML = `<p>Average: ${avg}</p>`;
     }
+
+    // Default: show Tournament on load
+    document.getElementById("modeSelect").value = "tournament";
+    showMode();
   </script>
 </body>
 </html>
